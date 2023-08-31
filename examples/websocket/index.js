@@ -1,14 +1,20 @@
 /**
  * Module dependencies.
  */
-const express = require('express');
-const { createProxyMiddleware } = require('../../dist'); // require('http-proxy-middleware');
+const express = require("express");
+const { createProxyMiddleware } = require("../../dist"); // require('http-proxy-middleware');
+
+const onProxyReqWs = (proxyReq, req, socket, options, head) => {
+  // add custom header
+  console.log('onProxyReqWs');
+  proxyReq.setHeader('X-Special-Proxy-Header', 'foobar');
+}
 
 /**
  * Configure proxy middleware
  */
 const wsProxy = createProxyMiddleware({
-  target: 'http://ws.ifelse.io',
+  target: 'ws://localhost:4000/websocket',
   // pathRewrite: {
   //  '^/websocket' : '/socket',        // rewrite path.
   //  '^/removepath' : ''               // remove path.
@@ -16,6 +22,7 @@ const wsProxy = createProxyMiddleware({
   changeOrigin: true, // for vhosted sites, changes host header to match to target's host
   ws: true, // enable websocket proxy
   logger: console,
+  on: { proxyReqWs: onProxyReqWs }
 });
 
 const app = express();
